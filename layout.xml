@@ -1,0 +1,172 @@
+<Layout xmlns="urn:speedata.de:2009/publisher/en" xmlns:sd="urn:speedata:2009/publisher/functions/en">
+
+  <PDFOptions printscaling="none" duplex="simplex" author="Bastian Kroggel (bastian@pnptc.com) for Plug & Play Germany GmbH" picktraybypdfsize="yes" />
+
+  <LoadFontfile name="InterBold" filename="Inter-Bold.otf" mode="harfbuzz" />
+  <LoadFontfile name="InterRegular" filename="Inter-Regular.otf" mode="harfbuzz" />
+  <LoadFontfile name="IBMPlexMono" filename="IBMPlexMono-Regular.otf" mode="harfbuzz">
+    <Fallback filename="Inter-Regular.otf" />
+  </LoadFontfile>
+
+
+  <DefineFontfamily name="name" fontsize="13" leading="10">
+    <Regular fontface="InterRegular" />
+  </DefineFontfamily>
+
+  <DefineFontfamily name="company" fontsize="17" leading="15">
+    <Regular fontface="InterBold" />
+  </DefineFontfamily>
+
+  <DefineFontfamily fontsize="5.7" leading="5.7" name="monofont">
+    <Regular fontface="IBMPlexMono" />
+  </DefineFontfamily>
+
+  <DefineFontfamily fontsize="5" leading="5" name="identifier">
+    <Regular fontface="IBMPlexMono" />
+  </DefineFontfamily>
+
+  <SetGrid width="2mm" height="2mm" />
+  <!-- <Trace grid="yes" gridallocation="yes" /> -->
+  <Pageformat height="38mm" width="90mm" />
+  <Pagetype name="page" test="true()">
+    <Margin left="5mm" right="5mm" top="6mm" bottom="1mm" />
+  </Pagetype>
+
+  <Record element="event">
+    <SetVariable variable="title" select="title" />
+    <SetVariable variable="checkin" select="checkin" />
+    <ProcessNode select="*" />
+  </Record>
+
+  <Record element="attendees">
+    <ForAll select="attendee">
+      <PlaceObject column="1" row="1">
+        <Textblock width="33.5" minheight="1" fontfamily="monofont">
+          <Paragraph>
+            <NoBreak reduce="cut" text="…">
+              <Value select="$title" />
+            </NoBreak>
+          </Paragraph>
+        </Textblock>
+      </PlaceObject>
+      <PlaceObject column="1" row="2.5">
+        <Table padding="1pt">
+          <Tr>
+            <Td>
+              <Frame border-bottom-left-radius="1pt" border-bottom-right-radius="1pt" border-top-left-radius="1pt" border-top-right-radius="1pt" framecolor="black" rulewidth="1px">
+                <Table width="2.5" fontfamily="identifier" stretch="max">
+                  <Tr>
+                    <Td align="center" padding-top="0.95pt" padding-bottom="0.45pt">
+                      <Paragraph>
+                        <Value select="tickettype" />
+                      </Paragraph>
+                    </Td>
+                  </Tr>
+                </Table>
+              </Frame>
+            </Td>
+            <Switch>
+              <Case test="vip = 'true'">
+                <Td padding-left="4pt">
+                  <Frame border-bottom-left-radius="1pt" border-bottom-right-radius="1pt" border-top-left-radius="1pt" border-top-right-radius="1pt" framecolor="black" rulewidth="1px" backgroundcolor="black">
+                    <Table fontfamily="identifier">
+                      <Tr>
+                        <Td align="center" padding-top="0.95pt" padding-bottom="0.45pt" padding-left="2pt" padding-right="2pt">
+                          <Paragraph color="white">
+                            <Value>VIP</Value>
+                          </Paragraph>
+                        </Td>
+                      </Tr>
+                    </Table>
+                  </Frame>
+                </Td>
+              </Case>
+            </Switch>
+            <Switch>
+              <Case test="speaker = 'true'">
+                <Td padding-left="4pt">
+                  <Frame border-bottom-left-radius="1pt" border-bottom-right-radius="1pt" border-top-left-radius="1pt" border-top-right-radius="1pt" framecolor="black" rulewidth="1px">
+                    <Table fontfamily="identifier">
+                      <Tr>
+                        <Td align="center" padding-top="0.95pt" padding-bottom="0.45pt" padding-left="2pt" padding-right="2pt">
+                          <Paragraph>
+                            <Value>SPEAKER</Value>
+                          </Paragraph>
+                        </Td>
+                      </Tr>
+                    </Table>
+                  </Frame>
+                </Td>
+              </Case>
+            </Switch>
+            <Switch>
+              <Case test="vc = 'true'">
+                <Td padding-left="4pt">
+                  <Frame border-bottom-left-radius="1pt" border-bottom-right-radius="1pt" border-top-left-radius="1pt" border-top-right-radius="1pt" framecolor="black" rulewidth="1px">
+                    <Table fontfamily="identifier">
+                      <Tr>
+                        <Td align="center" padding-top="0.95pt" padding-bottom="0.45pt" padding-left="2pt" padding-right="2pt">
+                          <Paragraph>
+                            <Value>VC</Value>
+                          </Paragraph>
+                        </Td>
+                      </Tr>
+                    </Table>
+                  </Frame>
+                </Td>
+              </Case>
+            </Switch>
+            <Switch>
+              <Case test="press = 'true'">
+                <Td padding-left="4pt">
+                  <Frame border-bottom-left-radius="1pt" border-bottom-right-radius="1pt" border-top-left-radius="1pt" border-top-right-radius="1pt" framecolor="black" rulewidth="1px">
+                    <Table fontfamily="identifier">
+                      <Tr>
+                        <Td align="center" padding-top="0.95pt" padding-bottom="0.45pt" padding-left="2pt" padding-right="2pt">
+                          <Paragraph>
+                            <Value>PRESS</Value>
+                          </Paragraph>
+                        </Td>
+                      </Tr>
+                    </Table>
+                  </Frame>
+                </Td>
+              </Case>
+            </Switch>
+          </Tr>
+        </Table>
+      </PlaceObject>
+      <PlaceObject column="36" row="1">
+        <Switch>
+          <Case test="$checkin = 'true'">
+            <Barcode select="entrancecode" type="QRCode" height="5" width="5" />
+          </Case>
+        </Switch>
+      </PlaceObject>
+      <PlaceObject column="1" row="8.5" valign="bottom">
+        <Table width="40" stretch="max">
+          <Tr minheight="3" valign="bottom">
+            <Td valign="bottom">
+              <Paragraph fontfamily="name">
+                <NoBreak reduce="fontsize" factor="0.9" maxwidth="40">
+                  <Value select="name" />
+                </NoBreak>
+              </Paragraph>
+            </Td>
+          </Tr>
+          <Tr minheight="3" valign="top" top-distance="2">
+            <Td>
+              <Paragraph fontfamily="company">
+                <NoBreak reduce="fontsize" factor="0.9" maxwidth="40">
+                  <Value select="company" />
+                </NoBreak>
+              </Paragraph>
+            </Td>
+          </Tr>
+        </Table>
+      </PlaceObject>
+      <NewPage />
+    </ForAll>
+  </Record>
+
+</Layout>
