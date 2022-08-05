@@ -2,7 +2,7 @@
 import sys, argparse
 from parse import create_xml
 from create import create_tag
-from get import get_attendees
+from get import get_attendees, build_company_list, build_tickettype_list, get_eventbrite
 import datetime
 import json
 import os
@@ -12,7 +12,6 @@ def create(args):
     print("Going to create something…")
     print("Stay tuned!")
     print("▼ ---")
-    # print(args)
 
     if not args.output:
         args.output = datetime.datetime.now().strftime("%Y%m%d") + "-nametags"
@@ -76,7 +75,14 @@ def create(args):
 
 
 def get(args):
-    print(args)
+    if args.input and args.delimiter:
+        print("going to go down the local path")
+    elif args.token and args.event and not (args.no_company and args.no_types):
+        attendees = get_eventbrite(args.token, args.event)
+        if not args.no_company:
+            build_company_list(attendees, args.delimiter)
+        if not args.no_types:
+            build_tickettype_list(attendees, args.delimiter)
 
 
 def main(argv):
@@ -129,7 +135,9 @@ def main(argv):
     parser_create.set_defaults(func=create)
 
     parser_get = subparsers.add_parser(
-        "get", parents=[input_parser], help="command to actually create namebadges"
+        "get",
+        parents=[input_parser],
+        help="command to pull company/tickettype information",
     )
     parser_get.set_defaults(func=get)
 
@@ -155,6 +163,16 @@ def main(argv):
 
     parser_create.add_argument("--types", nargs="?", const=True)
     parser_create.add_argument("--company", nargs="?", const=True)
+    parser_get.add_argument(
+        "--no-company",
+        action="store_true",
+        help="prevents script from returning a csv containing all company names",
+    )
+    parser_get.add_argument(
+        "--no-types",
+        action="store_true",
+        help="prevents script from returning a csv containing all ticket types/ticket categories",
+    )
 
     args = parser.parse_args()
 
