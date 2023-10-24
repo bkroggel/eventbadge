@@ -1,4 +1,5 @@
-<Layout xmlns="urn:speedata.de:2009/publisher/en" xmlns:sd="urn:speedata:2009/publisher/functions/en">
+<Layout xmlns="urn:speedata.de:2009/publisher/en"
+  xmlns:sd="urn:speedata:2009/publisher/functions/en">
 
   <PDFOptions printscaling="none" duplex="simplex" author="Bastian Kroggel (bastian@pnptc.com) for Plug & Play Germany GmbH" picktraybypdfsize="yes" />
 
@@ -40,15 +41,19 @@
 
   <Record element="attendees">
     <ForAll select="attendee">
-      <PlaceObject column="1" row="1">
-        <Textblock width="33.5" minheight="1" fontfamily="monofont">
-          <Paragraph>
-            <NoBreak reduce="cut" text="…">
-              <Value select="$title" />
-            </NoBreak>
-          </Paragraph>
-        </Textblock>
-      </PlaceObject>
+      <Switch>
+        <Case test="$title != ''">
+          <PlaceObject column="1" row="1">
+            <Textblock width="33.5" minheight="1" fontfamily="monofont">
+              <Paragraph>
+                <NoBreak reduce="cut" text="…">
+                  <Value select="$title" />
+                </NoBreak>
+              </Paragraph>
+            </Textblock>
+          </PlaceObject>
+        </Case>
+      </Switch>
       <PlaceObject column="1" row="2.5">
         <Table padding="1pt">
           <Tr>
@@ -138,7 +143,7 @@
       </PlaceObject>
       <PlaceObject column="36" row="1">
         <Switch>
-          <Case test="$checkin = 'true'">
+          <Case test="$checkin = 'true' and string(entrancecode) != ''">
             <Barcode select="entrancecode" type="QRCode" height="5" width="5" />
           </Case>
         </Switch>

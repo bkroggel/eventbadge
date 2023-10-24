@@ -1,9 +1,9 @@
 import sys, os, csv, xml.etree.cElementTree as ET, re, json
 
 
-def regex_replace(input, company):
+def regex_replace(company, input, delimiter):
     with open(input, newline="", encoding="utf-8") as list:
-        file = csv.reader(list, delimiter=";")
+        file = csv.reader(list, delimiter=delimiter)
         for row in file:
             mode = row[2].strip()
             file_value = row[0].strip()
@@ -29,41 +29,54 @@ def comparison(input, id, tickettype, delimiter):
         value_based_comparison(el, id, tickettype)
 
     elif os.path.exists(input) and os.path.isfile(input):
-        file_based_comparison(input, id, tickettype, delimiter)
+        if file_based_comparison(input, id, tickettype, delimiter):
+            return True
+        return False
 
     elif type(input) is str or type(input) is int:
         el = input.split(delimiter)
-        value_based_comparison(el, id, tickettype)
+        if value_based_comparison(el, id, tickettype):
+            return True
+        return False
 
     else:
         print("Type of '" + input + "' cannot be processed.")
         sys.exit(1)
 
 
-def compare_values(e, int, str):
-    if type(e) is int:
-        for e in input:
-            if str(e.strip()) == str(int.strip()):
-                return True
-        return False
+def compare_values(e, id, tickettype):
+    # if type(e) is int:
+    #     print("now here")
+    #     for e in input:
+    #         if str(e.strip()) == str(id.strip()):
+    #             return True
+    #     return False
+    if e.isnumeric():
+        if str(e.strip()) == str(id.strip()):
+            return True
 
     elif type(e) is str:
-        for e in input:
-            if e.strip() == str.strip():
-                return True
-            return False
+        if e.strip() == tickettype.strip():
+            print(id)
+            return True
+        # for e in input:
+        #     if e.strip() == tickettype.strip():
+        #         return True
+        #     return False
 
 
 def value_based_comparison(input, id, tickettype):
     for e in input:
-        compare_values(e, id, tickettype)
+        if compare_values(e, id, tickettype):
+            return True
 
 
 def file_based_comparison(input, id, tickettype, delimiter):
     with open(input, newline="", encoding="utf-8") as list:
         file = csv.reader(list, delimiter=delimiter)
         for row in file:
-            compare_values(row[0], id, tickettype)
+            if compare_values(row[0], id, tickettype):
+                return True
 
 
 def create_xml(
@@ -71,7 +84,7 @@ def create_xml(
     delimiter,
     output,
     name,
-    qrcode,
+    no_qrcode,
     speaker,
     vc,
     vip,
@@ -80,34 +93,36 @@ def create_xml(
     company_input,
 ):
     parent = ET.Element("event")
-    ET.SubElement(parent, "title").text = name
-    ET.SubElement(parent, "checkin").text = "true" if qrcode == True else "false"
+    if name:
+        ET.SubElement(parent, "title").text = name
+
+    ET.SubElement(parent, "checkin").text = "true" if no_qrcode == False else "false"
     attendees = ET.SubElement(parent, "attendees")
 
     with open(input, newline="", encoding="utf-8") as csvfile:
         attendee_list = csv.reader(csvfile, delimiter=delimiter)
         columns = len(next(attendee_list))
-        print(columns)
         if columns < 3:
             print(
                 "You need to specify at least 'id', 'firstname' and 'lastname' in your input file. Please go back to the scratchboard :P."
             )
             sys.exit(0)
         for row in attendee_list:
-
             # set csv output values to variables
             id = row[0]
             lastname = row[1]
             firstname = row[2]
-            company = row[3] if columns >= 3 else ""
-            tickettype = row[4] if columns >= 4 else ""
-            barcode = row[5] if columns >= 5 else ""
+            company = row[3] if columns >= 4 else ""
+            tickettype = row[4] if columns >= 5 else ""
+            barcode = row[5] if columns >= 6 else ""
 
             display_company = (
-                regex_replace(company, company_input) if company_input else False
+                regex_replace(company, company_input, delimiter)
+                if company_input
+                else False
             )
             display_tickettype = (
-                regex_replace(tickettype, tickettype_input)
+                regex_replace(tickettype, tickettype_input, delimiter)
                 if tickettype_input
                 else False
             )
@@ -115,17 +130,24 @@ def create_xml(
             # display tickettype in case it did not match with one of the file-entries
             # that way user can make sure to add the company to the file if necessary
             if display_tickettype is False:
-                print('WARNING: "' + row[3] + '" has not been set as a tickettype')
+                print('WARNING: "' + row[4] + '" has not been set as a tickettype')
 
             attendee = ET.SubElement(attendees, "attendee")
 
             ET.SubElement(attendee, "name").text = firstname + " " + lastname
             ET.SubElement(attendee, "company").text = (
-                display_company if display_company else company
+                display_company if display_company else company if company else "–"
             )
-            ET.SubElement(attendee, "entrancecode").text = barcode
+
+            if barcode:
+                ET.SubElement(attendee, "entrancecode").text = barcode
+
             ET.SubElement(attendee, "tickettype").text = (
-                tickettype if tickettype else "-"
+                display_tickettype
+                if display_tickettype
+                else tickettype
+                if tickettype
+                else "-"
             )
             ET.SubElement(attendee, "speaker").text = (
                 "true"

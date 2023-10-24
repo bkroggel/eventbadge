@@ -2,7 +2,13 @@
 import sys, argparse
 from parse import create_xml
 from create import create_tag
-from get import get_attendees, build_company_list, build_tickettype_list, get_eventbrite
+from get import (
+    get_attendees,
+    build_company_list,
+    build_tickettype_list,
+    get_eventbrite,
+    read_csv_as_json,
+)
 import datetime
 import json
 import os
@@ -22,7 +28,7 @@ def create(args):
             args.delimiter,
             args.output,
             args.name,
-            args.qrcode,
+            args.no_qrcode,
             args.speaker,
             args.vc,
             args.vip,
@@ -30,8 +36,8 @@ def create(args):
             args.types,
             args.company,
         )
-        output_name = json.loads(c)["output_name"]
-        create_tag(output_name)
+        output_name = json.loads(c)["output"]
+        create_tag(output_name, args.output)
     elif args.token and args.event:
         g = get_attendees(args.token, args.event, args.output, args.delimiter)
         csv_output = json.loads(g)["output"]
@@ -40,7 +46,7 @@ def create(args):
             ",",
             args.output,
             args.name,
-            args.qrcode,
+            args.no_qrcode,
             args.speaker,
             args.vc,
             args.vip,
@@ -76,9 +82,11 @@ def create(args):
 
 def get(args):
     if args.input and args.delimiter:
-        print("going to go down the local path")
+        attendees = json.loads(read_csv_as_json(args.input, args.delimiter))
     elif args.token and args.event and not (args.no_company and args.no_types):
         attendees = get_eventbrite(args.token, args.event)
+
+    if attendees:
         if not args.no_company:
             build_company_list(attendees, args.delimiter)
         if not args.no_types:
@@ -155,9 +163,9 @@ def main(argv):
         help="string. name which will be placed on top of the nametag. If property is set but no input provided the eventbrite name of the event will be used.",
     )
     parser_create.add_argument(
-        "--qrcode",
+        "--no-qrcode",
         action="store_true",
-        default=True,
+        # default=True,
         help="flag which controls the visibility of a barcode that allows to checkin attendees. Defaults to true but will omitted if no barcode values are present in csv-input. Eventbrite pulls will include the information in any case.",
     )
 

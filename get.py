@@ -7,10 +7,10 @@ def get_eventbrite(api_token, eventid):
 
     attendees = []
     continuation_token = ""
-    current_page = 0
+    current_page = 1
     last_page = 1
 
-    while current_page < last_page:
+    while current_page <= last_page:
         print("Current Page: " + str(current_page) + " | Last Page: " + str(last_page))
         r = requests.get(
             "https://www.eventbriteapi.com/v3/events/"
@@ -19,12 +19,13 @@ def get_eventbrite(api_token, eventid):
             + ("?continuation=" + continuation_token if continuation_token else ""),
             headers=requestheaders,
         )
-        attendees += r.json()["attendees"]
-        print(len(attendees))
-        current_page = r.json()["pagination"]["page_number"]
-        # last_page = r.json()["pagination"]["page_count"]
+        attendees += filter(lambda x: x["status"] == "Attending", r.json()["attendees"])
+        print("No. of Attendees: " + str(len(attendees)))
+        last_page = r.json()["pagination"]["page_count"]
+        # last_page = 1
         if current_page != last_page:
             continuation_token = r.json()["pagination"]["continuation"]
+        current_page += 1
 
     return attendees
 
@@ -49,7 +50,13 @@ def create_csv(attendees, output, delimiter):
             row[0] = attendee["id"].strip()
             row[1] = attendee["profile"]["last_name"].strip()
             row[2] = attendee["profile"]["first_name"].strip()
-            row[3] = attendee["profile"]["company"].strip()
+            row[3] = (
+                attendee["profile"]["company"].strip()
+                if "company" in attendee["profile"]
+                else attendee["profile"]["email"].split("@")[1]
+                if "email" in attendee["profile"]
+                else ""
+            )
             row[4] = attendee["ticket_class_name"].strip()
             row[5] = attendee["barcodes"][0]["barcode"].strip()
             row[6] = attendee["order_id"].strip()
@@ -67,8 +74,32 @@ def get_attendees(api_token, eventid, output, delimiter):
     return json.dumps(return_values)
 
 
+def read_csv_as_json(input, delimiter):
+    with open(input, newline="", encoding="utf-8") as csvfile:
+        attendees = []
+        list = csv.reader(csvfile, delimiter=delimiter)
+        next(list)
+        for item in list:
+            attendee = {}
+            attendee["id"] = item[0]
+            attendee["profile"] = {}
+            attendee["profile"]["last_name"] = item[1]
+            attendee["profile"]["first_name"] = item[2]
+            attendee["profile"]["company"] = item[3]
+            attendee["ticket_class_name"] = item[4]
+            attendee["barcodes"] = [{"barcode": item[5]}]
+            attendees.append(attendee)
+    return json.dumps(attendees)
+
+
 def build_company_list(attendees, delimiter):
-    attendees.sort(key=lambda x: x["profile"]["company"].lower().strip())
+    attendees.sort(
+        key=lambda x: (x["profile"]["company"].lower().strip())
+        if "company" in x["profile"]
+        else x["profile"]["email"].split("@")[1]
+        if "email" in x["profile"]
+        else ""
+    )
     companies = []
 
     tempfile = NamedTemporaryFile(mode="w", delete=False)
@@ -82,7 +113,13 @@ def build_company_list(attendees, delimiter):
             ]
         )
         for attendee in attendees:
-            company = attendee["profile"]["company"]
+            company = (
+                attendee["profile"]["company"]
+                if "company" in attendee["profile"]
+                else attendee["profile"]["email"].split("@")[1]
+                if "email" in attendee["profile"]
+                else ""
+            )
             if company not in companies:
                 companies.append(company)
                 row = ["", "", ""]

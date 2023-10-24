@@ -3,4 +3,7 @@ __pycache__/
 output/
 *.csv
 *.pdf
+*.xml
+layout_*
+readme.md
         
