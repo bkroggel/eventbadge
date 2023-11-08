@@ -6,29 +6,42 @@ def get_eventbrite(api_token, eventid):
     requestheaders = {"Authorization": "Bearer " + api_token}
 
     attendees = []
-    continuation_token = ""
-    current_page = 1
-    last_page = 1
+    events = eventid.split(",")
 
-    while current_page <= last_page:
-        print("Current Page: " + str(current_page) + " | Last Page: " + str(last_page))
-        r = requests.get(
-            "https://www.eventbriteapi.com/v3/events/"
-            + eventid
-            + "/attendees/"
-            + ("?continuation=" + continuation_token if continuation_token else ""),
-            headers=requestheaders,
+    for event in events:
+        continuation_token = ""
+        current_page = 1
+        last_page = 1
+        print(
+            "Running Event No. "
+            + str(events.index(event) + 1)
+            + " of "
+            + str(len(events))
         )
-        attendees += filter(
-            lambda x: x["status"] == "Attending" or "Checked In", r.json()["attendees"]
-        )
-        print("No. of Attendees: " + str(len(attendees)))
-        last_page = r.json()["pagination"]["page_count"]
-        # last_page = 1
-        if current_page != last_page:
-            continuation_token = r.json()["pagination"]["continuation"]
-        current_page += 1
 
+        while current_page <= last_page:
+            print(
+                "Current Page: " + str(current_page) + " | Last Page: " + str(last_page)
+            )
+            r = requests.get(
+                "https://www.eventbriteapi.com/v3/events/"
+                + event
+                + "/attendees/"
+                + ("?continuation=" + continuation_token if continuation_token else ""),
+                headers=requestheaders,
+            )
+            attendees += filter(
+                lambda x: x["status"] == "Attending" or "Checked In",
+                r.json()["attendees"],
+            )
+            print("No. of Attendees: " + str(len(attendees)))
+            last_page = r.json()["pagination"]["page_count"]
+            # last_page = 1
+            if current_page != last_page:
+                continuation_token = r.json()["pagination"]["continuation"]
+            current_page += 1
+
+    print("Overall No. of Attendees: " + str(len(attendees)))
     return attendees
 
 

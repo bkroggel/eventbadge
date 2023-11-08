@@ -94,7 +94,6 @@ def get(args):
 
 
 def main(argv):
-
     parser = argparse.ArgumentParser(
         prog="PROG",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -130,7 +129,7 @@ def main(argv):
     api.add_argument(
         "-e",
         "--event",
-        help="string eventbrite key to respective happening. Can be accessed from URL of event.",
+        help="string eventbrite key to respective happening. Can be accessed from URL of event. To combine multiple events use comma as delimiter.",
     )
     input_parser.add_argument(
         "-o",
