@@ -19,7 +19,9 @@ def get_eventbrite(api_token, eventid):
             + ("?continuation=" + continuation_token if continuation_token else ""),
             headers=requestheaders,
         )
-        attendees += filter(lambda x: x["status"] == "Attending", r.json()["attendees"])
+        attendees += filter(
+            lambda x: x["status"] == "Attending" or "Checked In", r.json()["attendees"]
+        )
         print("No. of Attendees: " + str(len(attendees)))
         last_page = r.json()["pagination"]["page_count"]
         # last_page = 1
