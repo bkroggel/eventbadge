@@ -6,20 +6,21 @@ def regex_replace(company, input, delimiter):
         file = csv.reader(list, delimiter=delimiter)
         for row in file:
             mode = row[2].strip()
-            file_value = row[0].strip()
+            file_value = row[0].strip().lower()
             if (
                 mode == "regex"
                 and file_value.find("*") == 0
                 and file_value.rfind("*") == (len(file_value) - 1)
             ):
                 if re.search(
-                    r"\b(" + file_value.rstrip("*").lstrip("*") + r")\b", company
+                    r"\b(" + file_value.rstrip("*").lstrip("*") + r")\b",
+                    company.lower(),
                 ):
                     return row[1].strip()
             elif mode == "regex" and file_value.find("*") == (len(file_value) - 1):
-                if re.match(r"^\b(" + file_value.rstrip("*") + r")\b", company):
+                if re.match(r"^\b(" + file_value.rstrip("*") + r")\b", company.lower()):
                     return row[1].strip()
-            elif file_value == company:
+            elif file_value == company.lower():
                 return row[1].strip()
         return False
 
