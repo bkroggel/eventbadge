@@ -1,4 +1,4 @@
-import sys, os, csv, xml.etree.cElementTree as ET, re, json
+import sys, os, csv, xml.etree.cElementTree as ET, re, json, datetime
 
 
 def regex_replace(company, input, delimiter):
@@ -92,7 +92,11 @@ def create_xml(
     press,
     tickettype_input,
     company_input,
+    eventdiff,
+    event,
+    no_meta,
 ):
+    timestamp_create = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
     parent = ET.Element("event")
     if name:
         ET.SubElement(parent, "title").text = name
@@ -116,6 +120,8 @@ def create_xml(
             company = row[3] if columns >= 4 else ""
             tickettype = row[4] if columns >= 5 else ""
             barcode = row[5] if columns >= 6 else ""
+            eventid = row[6] if columns >= 7 else ""
+            eventno = row[7] if columns >= 8 else ""
 
             display_company = (
                 regex_replace(company, company_input, delimiter)
@@ -128,6 +134,14 @@ def create_xml(
                 else False
             )
 
+            event_identifier = (
+                eventdiff.split(",")[int(eventno) - 1]
+                if eventdiff and len(eventdiff.split(",")) >= len(event.split(","))
+                else eventno
+                if eventdiff
+                else ""
+            )
+
             # display tickettype in case it did not match with one of the file-entries
             # that way user can make sure to add the company to the file if necessary
             if display_tickettype is False:
@@ -135,6 +149,10 @@ def create_xml(
 
             attendee = ET.SubElement(attendees, "attendee")
 
+            ET.SubElement(attendee, "id").text = id.strip() if no_meta == False else ""
+            ET.SubElement(attendee, "timestamp").text = (
+                timestamp_create if no_meta == False else ""
+            )
             ET.SubElement(attendee, "name").text = firstname + " " + lastname
             ET.SubElement(attendee, "company").text = (
                 display_company if display_company else company if company else "–"
@@ -150,6 +168,16 @@ def create_xml(
                 if tickettype
                 else "-"
             )
+
+            ET.SubElement(attendee, "eventid").text = (
+                eventid.strip() if no_meta == False else ""
+            )
+            ET.SubElement(attendee, "eventtitle").text = (
+                event_identifier
+                if len(event_identifier) <= 8
+                else event_identifier[:6] + "…"
+            )
+
             ET.SubElement(attendee, "speaker").text = (
                 "true"
                 if speaker and comparison(speaker, id, tickettype, delimiter)

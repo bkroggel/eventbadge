@@ -20,6 +20,7 @@ def get_eventbrite(api_token, eventid):
         )
 
         while current_page <= last_page:
+            updated_attendees = []
             print(
                 "Current Page: " + str(current_page) + " | Last Page: " + str(last_page)
             )
@@ -30,10 +31,19 @@ def get_eventbrite(api_token, eventid):
                 + ("?continuation=" + continuation_token if continuation_token else ""),
                 headers=requestheaders,
             )
+            for attendee in r.json()["attendees"]:
+                attendee.update({"event_no": str(events.index(event) + 1)})
+                updated_attendees.append(attendee)
+
             attendees += filter(
                 lambda x: x["status"] == "Attending" or "Checked In",
-                r.json()["attendees"],
+                updated_attendees,
             )
+
+            # attendees += filter(
+            #     lambda x: x["status"] == "Attending" or "Checked In",
+            #     r.json()["attendees"],
+            # )
             print("No. of Attendees: " + str(len(attendees)))
             last_page = r.json()["pagination"]["page_count"]
             # last_page = 1
@@ -58,10 +68,12 @@ def create_csv(attendees, output, delimiter):
                 "tickettype",
                 "barcode",
                 "order no.",
+                "event id",
+                "event no.",
             ]
         )
         for attendee in attendees:
-            row = ["", "", "", "", "", "", ""]
+            row = ["", "", "", "", "", "", "", "", ""]
             row[0] = attendee["id"].strip()
             row[1] = attendee["profile"]["last_name"].strip()
             row[2] = attendee["profile"]["first_name"].strip()
@@ -74,7 +86,8 @@ def create_csv(attendees, output, delimiter):
             )
             row[4] = attendee["ticket_class_name"].strip()
             row[5] = attendee["barcodes"][0]["barcode"].strip()
-            row[6] = attendee["order_id"].strip()
+            row[6] = attendee["event_id"].strip()
+            row[7] = attendee["event_no"].strip()
 
             writer.writerow(row)
 

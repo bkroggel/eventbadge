@@ -8,6 +8,9 @@
   <LoadFontfile name="IBMPlexMono" filename="IBMPlexMono-Regular.otf" mode="harfbuzz">
     <Fallback filename="Inter-Regular.otf" />
   </LoadFontfile>
+  <LoadFontfile name="IBMPlexMonoLight" filename="IBMPlexMono-Light.otf" mode="harfbuzz">
+    <Fallback filename="Inter-Regular.otf" />
+  </LoadFontfile>
 
 
   <DefineFontfamily name="name" fontsize="13" leading="10">
@@ -26,12 +29,63 @@
     <Regular fontface="IBMPlexMono" />
   </DefineFontfamily>
 
+  <DefineFontfamily fontsize="5" leading="5" name="small">
+    <Regular fontface="IBMPlexMonoLight" />
+  </DefineFontfamily>
+
+  <DefineFontfamily fontsize="3.5" leading="4.5" name="meta">
+    <Regular fontface="IBMPlexMonoLight" />
+  </DefineFontfamily>
+
+  <DefineFontfamily name="covertitle" fontsize="10" leading="14">
+    <Regular fontface="InterRegular" />
+  </DefineFontfamily>
+
   <SetGrid width="2mm" height="2mm" />
   <!-- <Trace grid="yes" gridallocation="yes" /> -->
   <Pageformat height="38mm" width="90mm" />
   <Pagetype name="page" test="true()">
     <Margin left="5mm" right="5mm" top="6mm" bottom="1mm" />
   </Pagetype>
+
+  <PlaceObject column="1" row="1" allocate="yes">
+    <Textblock fontfamily="covertitle" width="40">
+      <Paragraph>
+        <Value>Pioneering the Future</Value>
+      </Paragraph>
+    </Textblock>
+  </PlaceObject>
+  <PlaceObject allocate="yes">
+    <Table fontface="monofont" columndistance="5pt">
+      <Tr>
+        <Td>
+          <Paragraph>
+            <Value>Created on</Value>
+          </Paragraph>
+        </Td>
+        <Td>
+          <Paragraph>
+            <Value>Nov. 8, 2023</Value>
+          </Paragraph>
+        </Td>
+      </Tr>
+      <Tr>
+        <Td>
+          <Paragraph>
+            <Value>Event Date</Value>
+          </Paragraph>
+        </Td>
+        <Td>
+          <Paragraph>
+            <Value>Nov. 8, 2023</Value>
+          </Paragraph>
+        </Td>
+      </Tr>
+    </Table>
+  </PlaceObject>
+  <NewPage />
+
+
 
   <Record element="event">
     <SetVariable variable="title" select="title" />
@@ -55,8 +109,23 @@
         </Case>
       </Switch>
       <PlaceObject column="1" row="2.5">
-        <Table padding="1pt">
+        <Table padding-top="1pt" padding-bottom="1pt">
           <Tr>
+            <Switch>
+              <Case test="string(eventtitle) != ''">
+                <Td>
+                  <Table fontfamily="small" stretch="no">
+                    <Tr>
+                      <Td align="center" padding-top="0.95pt" padding-bottom="0.45pt" padding-right="3pt">
+                        <Paragraph>
+                          <Value select="eventtitle" />
+                        </Paragraph>
+                      </Td>
+                    </Tr>
+                  </Table>
+                </Td>
+              </Case>
+            </Switch>
             <Td>
               <Frame border-bottom-left-radius="1pt" border-bottom-right-radius="1pt" border-top-left-radius="1pt" border-top-right-radius="1pt" framecolor="black" rulewidth="1px">
                 <Table width="2.5" fontfamily="identifier" stretch="max">
@@ -149,11 +218,11 @@
         </Switch>
       </PlaceObject>
       <PlaceObject column="1" row="8.5" valign="bottom">
-        <Table width="40" stretch="max">
+        <Table width="38" stretch="max">
           <Tr minheight="3" valign="bottom">
             <Td valign="bottom">
               <Paragraph fontfamily="name">
-                <NoBreak reduce="fontsize" factor="0.9" maxwidth="40">
+                <NoBreak reduce="fontsize" factor="0.9" maxwidth="38">
                   <Value select="name" />
                 </NoBreak>
               </Paragraph>
@@ -162,7 +231,7 @@
           <Tr minheight="3" valign="top" top-distance="2">
             <Td>
               <Paragraph fontfamily="company">
-                <NoBreak reduce="fontsize" factor="0.9" maxwidth="40">
+                <NoBreak reduce="fontsize" factor="0.9" maxwidth="38">
                   <Value select="company" />
                 </NoBreak>
               </Paragraph>
@@ -170,6 +239,35 @@
           </Tr>
         </Table>
       </PlaceObject>
+      <PlaceObject allocate="no" row="16" column="40" rotate="-90">
+        <Table fontfamily="meta" width="15" stretch="max">
+          <Tr>
+            <Td padding-top="3pt" valign="top">
+              <Switch>
+                <Case test="string(timestamp) != ''">
+                  <Paragraph>
+                    <Value select="timestamp"/>
+                  </Paragraph>
+                </Case>
+              </Switch>
+              <Switch>
+                <Case test="string(eventid) != '' or string(id) != ''">
+                  <Paragraph>
+                    <Value select="eventid" />
+                    <Switch>
+                      <Case test="string(eventid) != '' and string(id) != ''">
+                        <Value> | </Value>
+                      </Case>
+                    </Switch>
+                    <Value select="id" />
+                  </Paragraph>
+                </Case>
+              </Switch>
+            </Td>
+          </Tr>
+        </Table>
+      </PlaceObject>
+
       <NewPage />
     </ForAll>
   </Record>

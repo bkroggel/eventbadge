@@ -35,6 +35,9 @@ def create(args):
             args.press,
             args.types,
             args.company,
+            "",
+            "",
+            "",
         )
         output_name = json.loads(c)["output"]
         create_tag(output_name, args.output)
@@ -53,6 +56,9 @@ def create(args):
             args.press,
             args.types,
             args.company,
+            args.eventdiff,
+            args.event,
+            args.no_meta,
         )
         xml_output = json.loads(c)["output"]
 
@@ -160,6 +166,15 @@ def main(argv):
         "-n",
         "--name",
         help="string. name which will be placed on top of the nametag. If property is set but no input provided the eventbrite name of the event will be used.",
+    )
+    parser_create.add_argument(
+        "--no-meta",
+        action="store_true",
+        help="flag which controls the visibility of the meta information (event id, user id and timestamp on namebadge). Defaults to true.",
+    )
+    parser_create.add_argument(
+        "--eventdiff",
+        help="string. differentiator for different events. comma separated. if not specified differentiator will be omitted. if specified but no input provided or length of input is less than events specified in --event value will default to leading zero numbering.",
     )
     parser_create.add_argument(
         "--no-qrcode",
